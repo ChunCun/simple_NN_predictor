@@ -29,8 +29,8 @@ def inference(x, weights, biases, keep_prob):
 
 # sess = tf.InteractiveSession()
 #
-x = tf.placeholder(tf.float32,[1, 1000])
-y = tf.Variable(tf.zeros([1,250]))
+x = tf.placeholder(tf.float32,[1, 96])
+y = tf.Variable(tf.zeros([1,24]))
 # w = tf.Variable(tf.zeros([1000,250]))
 # b = tf.Variable(tf.zeros([250,1]))
 #
@@ -43,12 +43,12 @@ y = tf.Variable(tf.zeros([1,250]))
 
 # tf.global_variables_initializer().run()
 
-n_hidden_1 = 875
-n_hidden_2 = 750
-n_hidden_3 = 625
-n_hidden_4 = 500
-n_input = 1000
-n_classes = 250
+n_hidden_1 = 80
+n_hidden_2 = 64
+n_hidden_3 = 48
+n_hidden_4 = 32
+n_input = 96
+n_classes = 24
 
 weights = {
     'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
@@ -71,12 +71,12 @@ predictions = inference(x, weights, biases, keep_prob)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=predictions, labels=y))
 optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
 utils.safe_mkdir('checkpoints')
-utils.safe_mkdir('checkpoints/convnet_mnist')
+utils.safe_mkdir('checkpoints/TextFile')
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(os.path.dirname('checkpoints/convnet_mnist/checkpoint'))
+    ckpt = tf.train.get_checkpoint_state(os.path.dirname('checkpoints/TextFile/checkpoint'))
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
 
@@ -84,16 +84,16 @@ with tf.Session() as sess:
     for i in range(10000):
         total_loss=0
 
-        for idx in xrange(1, 24):
-            data_train=ljq_utils.load_data('./data/unkown/train/train_{}.txt'.format(str(idx)))
-            data_label = ljq_utils.load_label('./data/unkown/train/label_{}.txt'.format(str(idx)))
+        for idx in xrange(1, 250):
+            data_train=ljq_utils.load_data('./data/unkown/TextFile/train_{}.txt'.format(str(idx)))
+            data_label = ljq_utils.load_label('./data/unkown/TextFile/label_{}.txt'.format(str(idx)))
             # _, l = sess.run([train, loss],feed_dict={x:data_train,y_true:data_label})
             _, l = sess.run([optimizer, cost],feed_dict={x:data_train,y:data_label,keep_prob:0.8})
             total_loss += l
             step+=1
             print('Epoch {0}: {1}'.format(idx, l))
-            if np.mod(step,500)==1:
-                saver.save(sess, 'checkpoints/unkown/unkown', step)
+            if np.mod(step,200)==1:
+                saver.save(sess, 'checkpoints/TextFile/TextFile', step)
 
 
 # correct_prediction = tf.equal(tf.argmax(y_pre,1),tf.argmax(y_true,1))
